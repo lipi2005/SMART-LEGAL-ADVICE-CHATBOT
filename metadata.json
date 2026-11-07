@@ -1,0 +1,7 @@
+{
+  "name": "Legal FAQ Assistant",
+  "description": "Interactive, lightweight single-file Legal FAQ Chatbot powered by a rule-based semantic knowledge graph with instant legal definitions, actionable advice, and topic traversal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

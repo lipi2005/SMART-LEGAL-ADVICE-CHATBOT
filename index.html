@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legal FAQ Assistant | Semantic Knowledge-Graph & Rule-Based Guidance</title>
+  <meta name="description" content="Interactive, lightweight single-file Legal FAQ Chatbot powered by a rule-based semantic knowledge graph with instant legal definitions, actionable advice, and topic traversal." />
+  <meta property="og:title" content="Legal FAQ Assistant" />
+  <meta property="og:description" content="Interactive, lightweight single-file Legal FAQ Chatbot powered by a rule-based semantic knowledge graph." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-canvas: #090e17;
+      --bg-surface: #101927;
+      --bg-surface-elevated: #172338;
+      --bg-surface-hover: #1f2f4a;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(59, 130, 246, 0.4);
+      --border-gold: rgba(212, 175, 55, 0.35);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --accent-gold: #eab308;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Bar */
+    header.legal-header {
+      background: rgba(16, 25, 39, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      height: 64px;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .brand-zone {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .brand-icon-wrapper {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--border-gold);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-gold);
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .brand-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-gold);
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid rgba(234, 179, 8, 0.25);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .header-nav::-webkit-scrollbar { display: none; }
+
+    .nav-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .nav-btn:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+    }
+    .nav-btn.active {
+      background: var(--bg-surface-elevated);
+      color: var(--accent-blue);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .action-btn.secondary {
+      background: var(--bg-surface-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+    .action-btn.secondary:hover {
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .action-btn.primary {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border: 1px solid transparent;
+    }
+    .action-btn.primary:hover {
+      background: var(--accent-blue-hover);
+    }
+
+    /* Main Container */
+    .app-main {
+      flex: 1;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 1.25rem 1rem 1.25rem;
+      height: calc(100vh - 64px);
+    }
+
+    /* Suggested Legal Topics Strip */
+    .suggested-strip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .strip-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-gold);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .strip-scroll {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      padding-bottom: 2px;
+    }
+
+    .topic-chip {
+      background: var(--bg-surface-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+    .topic-chip:hover {
+      background: var(--bg-surface-hover);
+      color: var(--text-primary);
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Chat Log Container */
+    .chat-container {
+      flex: 1;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chat-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      scroll-behavior: smooth;
+    }
+
+    /* Welcome / Hero Banner */
+    .welcome-card {
+      background: linear-gradient(180deg, rgba(23, 35, 56, 0.8) 0%, rgba(16, 25, 39, 0.9) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .welcome-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-gold);
+    }
+
+    .welcome-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-top: 0.25rem;
+    }
+
+    .welcome-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      max-width: 780px;
+      margin-top: 0.25rem;
+    }
+
+    .welcome-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .cat-quick-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .cat-quick-box:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      background: var(--bg-surface-hover);
+      transform: translateY(-2px);
+    }
+    .cat-quick-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.2rem;
+    }
+    .cat-quick-count {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--accent-blue);
+    }
+    .cat-quick-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .disclaimer-banner {
+      background: rgba(234, 179, 8, 0.08);
+      border: 1px solid rgba(234, 179, 8, 0.2);
+      border-radius: 6px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.75rem;
+      color: #fef08a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Message Rows */
+    .msg-row {
+      display: flex;
+      gap: 0.85rem;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-row.user {
+      justify-content: flex-end;
+    }
+
+    .msg-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .msg-avatar.bot {
+      background: #1e293b;
+      border: 1px solid var(--border-gold);
+      color: var(--accent-gold);
+    }
+
+    .msg-avatar.user-avatar {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .msg-content {
+      max-width: 85%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .msg-row.user .msg-bubble {
+      background: #1e3a8a;
+      color: #f8fafc;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      padding: 0.75rem 1rem;
+      border-radius: 12px 12px 2px 12px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .msg-row.bot .msg-bubble {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 2px 12px 12px 12px;
+      padding: 1.25rem;
+      color: var(--text-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .msg-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .msg-row.user .msg-meta {
+      justify-content: flex-end;
+    }
+
+    /* Structured Legal Card Inside Bot Bubble */
+    .legal-node-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.75rem;
+    }
+
+    .node-title-group h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .node-category-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .confidence-badge {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 4px;
+      padding: 0.2rem 0.45rem;
+      white-space: nowrap;
+    }
+
+    .legal-section-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .legal-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legal-definition-text {
+      font-size: 0.92rem;
+      color: #e2e8f0;
+      background: rgba(10, 15, 26, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 0.75rem 0.85rem;
+      line-height: 1.6;
+    }
+
+    .key-elements-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      list-style: none;
+    }
+
+    .key-elements-list li {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      line-height: 1.45;
+    }
+
+    .key-elements-list li::before {
+      content: "▪";
+      color: var(--accent-blue);
+      font-weight: bold;
+    }
+
+    .legal-advice-box {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 6px;
+      padding: 0.75rem 0.85rem;
+      font-size: 0.85rem;
+      color: #d1fae5;
+      line-height: 1.5;
+    }
+
+    .common-mistake-box {
+      background: rgba(244, 63, 94, 0.08);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.82rem;
+      color: #fecdd3;
+      line-height: 1.45;
+    }
+
+    .related-nodes-section {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .related-chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .related-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      border-radius: 6px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+    .related-btn:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      transform: translateY(-1px);
+    }
+
+    /* Comparison Table Card */
+    .comparison-container {
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    .comparison-table th {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .comparison-table td {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Input Dock */
+    .input-dock {
+      background: rgba(16, 25, 39, 0.95);
+      border-top: 1px solid var(--border-subtle);
+      padding: 0.85rem 1.25rem;
+      position: relative;
+    }
+
+    .autocomplete-box {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 1.25rem;
+      right: 1.25rem;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 20;
+    }
+
+    .autocomplete-item {
+      padding: 0.6rem 0.85rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .autocomplete-item:hover, .autocomplete-item.selected {
+      background: var(--bg-surface-hover);
+      color: var(--text-primary);
+    }
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .input-form {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 0.85rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .chat-input {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.75rem 2.5rem 0.75rem 2.4rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      transition: all 0.15s ease;
+    }
+    .chat-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    .chat-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .clear-input-btn {
+      position: absolute;
+      right: 0.75rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.2rem;
+      display: none;
+    }
+    .clear-input-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .send-btn {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .send-btn:hover:not(:disabled) {
+      background: var(--accent-blue-hover);
+      transform: translateY(-1px);
+    }
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .input-hints {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      padding: 0 0.25rem;
+    }
+
+    /* Knowledge Graph Visualizer Drawer / Modal */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .drawer-overlay.open {
+      display: flex;
+    }
+
+    .drawer-pane {
+      width: 100%;
+      max-width: 560px;
+      height: 100%;
+      background: #0f172a;
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      animation: slideIn 0.25s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .drawer-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .drawer-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.4rem;
+      border-radius: 6px;
+    }
+    .close-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-surface-elevated);
+    }
+
+    .drawer-search {
+      padding: 1rem 1.5rem 0.5rem 1.5rem;
+    }
+    .drawer-search-input {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+    .drawer-search-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.5rem 1.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .graph-category-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .graph-category-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .graph-nodes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .graph-node-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.65rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .graph-node-card:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--accent-blue);
+      transform: translateY(-1px);
+    }
+    .graph-node-card.selected {
+      border-color: var(--accent-gold);
+      background: rgba(234, 179, 8, 0.08);
+    }
+    .graph-node-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+    .graph-node-keywords {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Node Inspector in Drawer */
+    .node-inspector {
+      background: #172338;
+      border: 1px solid var(--border-gold);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .inspector-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .inspector-def {
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+    .inspector-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Footer Legal Notice */
+    .app-footer {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 0.6rem 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      background: #060910;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      header.legal-header {
+        padding: 0 1rem;
+        gap: 1rem;
+      }
+      .header-nav {
+        display: none;
+      }
+      .app-main {
+        padding: 0.75rem 0.75rem 0.5rem 0.75rem;
+      }
+      .msg-content {
+        max-width: 95%;
+      }
+      .suggested-strip {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar (3-Zone Contract) -->
+  <header class="legal-header">
+    <!-- Zone 1: Brand Wordmark -->
+    <div class="brand-zone">
+      <div class="brand-icon-wrapper" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+          <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+          <path d="M7 21h10"/>
+          <path d="M12 3v18"/>
+          <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+        </svg>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <span class="brand-title">Legal FAQ Assistant</span>
+      </div>
+      <span class="brand-tag">Semantic Net v2.4</span>
+    </div>
+
+    <!-- Zone 2: Navigation / Category Quick Filters -->
+    <nav class="header-nav" aria-label="Topic Categories">
+      <button class="nav-btn active" data-cat="all" onclick="filterCategory('all', this)">All Topics</button>
+      <button class="nav-btn" data-cat="Contracts" onclick="filterCategory('Contracts', this)">Contracts</button>
+      <button class="nav-btn" data-cat="Tenant & Landlord" onclick="filterCategory('Tenant & Landlord', this)">Tenant & Lease</button>
+      <button class="nav-btn" data-cat="Intellectual Property" onclick="filterCategory('Intellectual Property', this)">IP & Copyright</button>
+      <button class="nav-btn" data-cat="Employment Law" onclick="filterCategory('Employment Law', this)">Employment</button>
+      <button class="nav-btn" data-cat="Dispute Resolution" onclick="filterCategory('Dispute Resolution', this)">Dispute Resolution</button>
+    </nav>
+
+    <!-- Zone 3: Primary Action Controls -->
+    <div class="header-actions">
+      <button class="action-btn secondary" id="btn-toggle-graph" onclick="toggleGraphDrawer(true)" title="Inspect Semantic Graph">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        <span>Knowledge Graph</span>
+      </button>
+      <button class="action-btn secondary" onclick="resetChat()" title="Clear conversation history">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        <span>Reset Chat</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Chat Application Frame -->
+  <main class="app-main">
+
+    <!-- Suggested Topics Quick Strip -->
+    <section class="suggested-strip" aria-label="Frequently Asked Legal Questions">
+      <div class="strip-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span>Quick Topics:</span>
+      </div>
+      <div class="strip-scroll" id="suggested-chips">
+        <button class="topic-chip" onclick="handleTopicClick('What is a Breach of Contract?')">Breach of Contract</button>
+        <button class="topic-chip" onclick="handleTopicClick('Can a landlord evict without notice?')">Tenant Eviction Rules</button>
+        <button class="topic-chip" onclick="handleTopicClick('Copyright vs Patent: What is the difference?')">Copyright vs Patent</button>
+        <button class="topic-chip" onclick="handleTopicClick('How do I get my security deposit back?')">Security Deposit Return</button>
+        <button class="topic-chip" onclick="handleTopicClick('Are Non-Compete agreements enforceable?')">Non-Compete Enforceability</button>
+        <button class="topic-chip" onclick="handleTopicClick('Independent contractor vs employee status')">Contractor vs Employee</button>
+        <button class="topic-chip" onclick="handleTopicClick('What constitutes Fair Use in copyright?')">Fair Use Doctrine</button>
+        <button class="topic-chip" onclick="handleTopicClick('Mediation vs Arbitration differences')">Mediation vs Arbitration</button>
+        <button class="topic-chip" onclick="handleTopicClick('How to write a Cease and Desist letter?')">Cease & Desist Letter</button>
+      </div>
+    </section>
+
+    <!-- Chat Stream Container -->
+    <div class="chat-container">
+      <div class="chat-log" id="chat-log" role="log" aria-live="polite">
+        
+        <!-- Welcome Hero Intro Message -->
+        <article class="welcome-card" id="welcome-message">
+          <div class="welcome-header">
+            <div>
+              <div class="welcome-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10h2v4h-2zm0 6h2v2h-2z"/>
+                </svg>
+                <span>Automated Knowledge Engine</span>
+              </div>
+              <h1 class="welcome-title">Legal FAQ Assistant</h1>
+              <p class="welcome-desc">
+                Query our client-side Semantic Knowledge Graph of 28+ interrelated legal concepts across contracts, tenant protections, intellectual property, employment, and dispute resolution. Receive direct legal definitions, statutory criteria, actionable guidance, and follow-up relationship links.
+              </p>
+            </div>
+          </div>
+
+          <div class="disclaimer-banner" role="alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span><strong>Disclaimer:</strong> This system uses a deterministic rule-based semantic network for educational and informational purposes only. It does not provide legal representation or formal legal advice. Consult a licensed attorney for specific legal matters.</span>
+          </div>
+
+          <div class="welcome-categories">
+            <div class="cat-quick-box" onclick="handleCategorySelection('Contracts')">
+              <div class="cat-quick-title">
+                <span>Contract Law</span>
+                <span class="cat-quick-count">6 Nodes</span>
+              </div>
+              <div class="cat-quick-desc">Agreements, breach, consideration, liquidated damages, NDAs, force majeure.</div>
+            </div>
+            <div class="cat-quick-box" onclick="handleCategorySelection('Tenant & Landlord')">
+              <div class="cat-quick-title">
+                <span>Tenant & Lease</span>
+                <span class="cat-quick-count">6 Nodes</span>
+              </div>
+              <div class="cat-quick-desc">Eviction notices, deposit deductions, habitability, quiet enjoyment, subleasing.</div>
+            </div>
+            <div class="cat-quick-box" onclick="handleCategorySelection('Intellectual Property')">
+              <div class="cat-quick-title">
+                <span>Intellectual Property</span>
+                <span class="cat-quick-count">7 Nodes</span>
+              </div>
+              <div class="cat-quick-desc">Copyright, infringement, fair use, patents, trademarks, trade secrets.</div>
+            </div>
+            <div class="cat-quick-box" onclick="handleCategorySelection('Employment Law')">
+              <div class="cat-quick-title">
+                <span>Employment Law</span>
+                <span class="cat-quick-count">6 Nodes</span>
+              </div>
+              <div class="cat-quick-desc">At-will dismissal, worker misclassification, non-competes, severance, overtime.</div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Input Dock with Real-Time Matching & Send -->
+      <footer class="input-dock">
+        <!-- Autocomplete Dropdown -->
+        <div class="autocomplete-box" id="autocomplete-box" role="listbox"></div>
+
+        <form class="input-form" id="chat-form" onsubmit="handleFormSubmit(event)">
+          <div class="input-wrapper">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input 
+              type="text" 
+              id="user-input" 
+              class="chat-input" 
+              placeholder="Ask a legal question (e.g., 'What is a Breach of Contract?', 'Copyright vs Patent', 'Eviction rules')..." 
+              autocomplete="off"
+              oninput="handleInputChange(this.value)"
+              onkeydown="handleInputKeyDown(event)"
+              aria-label="Legal question input"
+            />
+            <button type="button" class="clear-input-btn" id="btn-clear-input" onclick="clearInputField()" title="Clear text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <button type="submit" class="send-btn" id="btn-send">
+            <span>Send</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="input-hints">
+          <span>Tip: Ask for definitions, actionable steps, or comparisons like <em>"Copyright vs Patent"</em>.</span>
+          <span id="char-counter">Press Enter ↵</span>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+  <!-- Legal Notice Footer -->
+  <footer class="app-footer">
+    LEXICON Semantic Legal Net • Single-file pure client-side application • No external server dependencies • For informational and educational reference only.
+  </footer>
+
+  <!-- Knowledge Graph Drawer Overlay -->
+  <div class="drawer-overlay" id="graph-drawer" onclick="handleDrawerOverlayClick(event)">
+    <div class="drawer-pane">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span>Semantic Legal Ontology</span>
+        </div>
+        <button class="close-btn" onclick="toggleGraphDrawer(false)" title="Close graph inspector">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer-search">
+        <input 
+          type="text" 
+          id="drawer-search-input" 
+          class="drawer-search-input" 
+          placeholder="Filter concepts or keywords..." 
+          oninput="handleDrawerSearch(this.value)"
+        />
+      </div>
+
+      <!-- Node Detail Inspector (shows on click) -->
+      <div style="padding: 0 1.5rem;" id="inspector-container"></div>
+
+      <div class="drawer-body" id="drawer-nodes-list">
+        <!-- Rendered by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Pure Client-Side JavaScript Logic & Semantic Reasoning Engine -->
+  <script>
+    /**
+     * =========================================================================
+     * 1. SEMANTIC NET / LEGAL KNOWLEDGE GRAPH
+     * =========================================================================
+     * Hardcoded relational graph representing 28 legal concepts with:
+     * - id, label, category, keywords, definition, keyElements, advice, commonMistakes, related
+     */
+    const legalKnowledgeGraph = {
+      // --- CONTRACT LAW ---
+      "contract": {
+        id: "contract",
+        label: "Contract Formation",
+        category: "Contracts",
+        keywords: ["contract", "agreement", "binding", "offer", "acceptance", "mutual assent", "meeting of minds", "valid contract", "draft agreement"],
+        definition: "A legally binding and enforceable agreement between two or more parties that creates mutual rights and obligations.",
+        keyElements: [
+          "Offer: A clear manifestation of intent to enter into a bargain on definite terms.",
+          "Acceptance: Unconditional assent to the terms of the offer (mirror image rule).",
+          "Consideration: A bargained-for exchange of value between the contracting parties.",
+          "Capacity & Legality: All parties must be of legal age, sound mind, and the subject matter lawful."
+        ],
+        advice: "Always document agreements in writing with clear deliverable deadlines, payment milestones, dispute resolution clauses, and explicit signatures from authorized representatives.",
+        commonMistakes: "Relying on vague email or verbal promises without reducing payment terms and termination contingencies into a signed written document.",
+        related: ["breach_of_contract", "consideration", "nda", "liquidated_damages", "force_majeure"],
+        exampleQuestions: ["What makes a contract legally binding?", "How to form a valid business agreement?", "Can a verbal agreement be enforced?"]
+      },
+
+      "breach_of_contract": {
+        id: "breach_of_contract",
+        label: "Breach of Contract",
+        keywords: ["breach", "broke contract", "violation", "unfulfilled terms", "default", "failed to deliver", "non-performance", "sue for contract", "contract violation"],
+        definition: "The failure of a contracting party, without legal justification or excuse, to perform any promise, obligation, or duty that forms all or part of an agreed contract.",
+        keyElements: [
+          "Existence of a valid, enforceable contract.",
+          "Performance or tender of performance by the non-breaching plaintiff.",
+          "Material or minor failure to perform by the defending party.",
+          "Direct, measurable economic damages suffered as a consequence of the breach."
+        ],
+        advice: "1. Audit your contract's Notice & Cure period clause. 2. Send formal written notice identifying the default with a deadline to cure. 3. Collate itemized financial records of damages and review liquidated damages or attorney-fee clauses.",
+        commonMistakes: "Immediately stopping your own contractual obligations without following the specified notice-and-cure procedure, which can expose you to counterclaims.",
+        related: ["contract", "liquidated_damages", "cease_and_desist", "small_claims_court"],
+        exampleQuestions: ["What happens if someone breaches a contract?", "Can I sue for unfulfilled deliverables?", "How to send a breach of contract notice?"]
+      },
+
+      "liquidated_damages": {
+        id: "liquidated_damages",
+        label: "Liquidated Damages",
+        keywords: ["liquidated damages", "penalty clause", "predetermined damages", "stipulated damages", "delay fee", "per diem penalty", "contract penalty"],
+        definition: "A contract clause specifying a predetermined amount of monetary damages that one party must pay to the other in the event of a specific breach or delay.",
+        keyElements: [
+          "Damages anticipated from breach were uncertain or difficult to ascertain at the time of contract execution.",
+          "The stipulated amount was a reasonable forecast of just compensation, not a punitive penalty."
+        ],
+        advice: "Ensure the contract reflects documented calculations justifying the estimated sum. Avoid labeling amounts as 'penalties', which courts generally refuse to enforce on public policy grounds.",
+        commonMistakes: "Setting an arbitrarily exorbitant daily penalty that far exceeds actual commercial injury, rendering the clause void as an unenforceable penalty.",
+        related: ["contract", "breach_of_contract", "small_claims_court"],
+        exampleQuestions: ["What are liquidated damages?", "Is a daily late fee clause legal in contracts?", "Can courts void a penalty clause?"]
+      },
+
+      "nda": {
+        id: "nda",
+        label: "Non-Disclosure Agreement (NDA)",
+        keywords: ["nda", "non disclosure", "confidentiality agreement", "proprietary information", "trade secret agreement", "secrecy agreement", "confidential disclosure"],
+        definition: "A legally binding contract between parties establishing confidential information that may be shared for defined business purposes while restricting unauthorized disclosure to third parties.",
+        keyElements: [
+          "Precise definition of what qualifies as 'Confidential Information'.",
+          "Permitted purpose for which disclosures may be accessed or analyzed.",
+          "Standard carve-outs (prior knowledge, publicly available info, independently developed, court order).",
+          "Duration of confidentiality obligations (typically 2 to 5 years, or indefinitely for trade secrets)."
+        ],
+        advice: "Always use mutual NDAs where both parties disclose data. Never sign broad unilateral NDAs without specific duration limits and standard public domain exclusions.",
+        commonMistakes: "Failing to clearly mark shared files as 'Confidential' when the agreement requires formal designation within 30 days of transmission.",
+        related: ["contract", "trade_secret", "breach_of_contract", "non_compete"],
+        exampleQuestions: ["What should be included in an NDA?", "How long does a Non-Disclosure Agreement last?", "What happens if someone leaks confidential data?"]
+      },
+
+      "force_majeure": {
+        id: "force_majeure",
+        label: "Force Majeure Clause",
+        keywords: ["force majeure", "act of god", "natural disaster", "pandemic", "unforeseen event", "impossibility of performance", "contract cancellation event"],
+        definition: "A contractual provision that relieves one or both parties from performing their contractual duties when an unforeseeable, extraordinary event beyond their control occurs.",
+        keyElements: [
+          "Occurrence of an qualifying event (e.g., war, severe natural disaster, embargo, government shutdown).",
+          "The event was completely unforeseeable at the time of agreement.",
+          "Performance has become objectively impossible or commercially impracticable, not merely unprofitable.",
+          "Prompt written notice sent within contractually prescribed timelines."
+        ],
+        advice: "Review the exact list of enumerated events in your contract. Courts interpret force majeure clauses strictly according to the express text rather than general fairness principles.",
+        commonMistakes: "Assuming general market inflation or standard economic downturns qualify as force majeure events.",
+        related: ["contract", "breach_of_contract"],
+        exampleQuestions: ["When can I invoke a force majeure clause?", "Does inflation qualify as force majeure?", "How do contracts handle natural disasters?"]
+      },
+
+      "consideration": {
+        id: "consideration",
+        label: "Legal Consideration",
+        keywords: ["consideration", "bargained for exchange", "quid pro quo", "value exchanged", "gratuitous promise", "contract validity"],
+        definition: "Something of legal value given, promised, or performed by each party to a contract in exchange for the promise or performance of the other.",
+        keyElements: [
+          "Bargained-for exchange: A mutual inducement between the promisor and promisee.",
+          "Legal detriment: An agreement to do something not legally obligated to do, or refrain from doing something one has a right to do.",
+          "Adequacy vs. Sufficiency: Courts rarely weigh the adequacy of value (the 'peppercorn principle')."
+        ],
+        advice: "Ensure every amendment or contract variation includes fresh consideration (e.g., modified timeline, added fee, or revised scope) to avoid being classified as an unenforceable gift promise.",
+        commonMistakes: "Modifying existing contract obligations without providing new consideration, unless governed by Uniform Commercial Code (UCC) sales rules.",
+        related: ["contract", "breach_of_contract"],
+        exampleQuestions: ["What is consideration in contract law?", "Can a promise to give a gift be enforced?", "Why is consideration required?"]
+      },
+
+      // --- TENANT & LANDLORD RIGHTS ---
+      "tenant_rights": {
+        id: "tenant_rights",
+        label: "Tenant Rights Overview",
+        keywords: ["tenant rights", "renter rights", "landlord tenant", "housing law", "renter protections", "landlord dispute", "apartment laws"],
+        definition: "A set of statutory and common-law legal protections that guarantee residential tenants safe, habitable living spaces, privacy, and protection against arbitrary or retaliatory landlord actions.",
+        keyElements: [
+          "Right to a habitable dwelling meeting local building, health, and fire codes.",
+          "Right to quiet enjoyment free from unreasonable landlord intrusion or harassment.",
+          "Right against unlawful retaliation for filing legitimate habitability or code complaints.",
+          "Right to advance written notice before any landlord entry (typically 24 to 48 hours)."
+        ],
+        advice: "Keep a digital paper trail of all communications with your landlord. Submit all maintenance requests via certified email or written letter with dated photographs of defects.",
+        commonMistakes: "Withholding rent entirely without following formal state-sanctioned escrow procedures or written repair-and-deduct statutes.",
+        related: ["eviction", "security_deposit", "habitability", "lease_agreement", "quiet_enjoyment"],
+        exampleQuestions: ["What are my rights as a residential renter?", "Can my landlord enter my apartment without notice?", "How to deal with landlord retaliation?"]
+      },
+
+      "eviction": {
+        id: "eviction",
+        label: "Eviction & Unlawful Detainer",
+        keywords: ["eviction", "evict", "eviction notice", "notice to quit", "unlawful detainer", "kick out tenant", "locked out", "eviction rules", "eviction process"],
+        definition: "The legal process by which a landlord removes a tenant from a rental property, requiring formal written notice, judicial process, and a court order.",
+        keyElements: [
+          "Statutory Written Notice: 3-day notice to pay or quit, 30/60-day non-renewal notice, or cure-or-quit notice.",
+          "Formal Court Proceeding: Landlord cannot engage in 'self-help' eviction (shutting off utilities, changing locks).",
+          "Right to Defend: Tenants can raise defenses such as retaliation, uninhabitable premises, or procedural errors.",
+          "Law Enforcement Execution: Only an authorized sheriff or marshal can physically enforce an eviction judgment."
+        ],
+        advice: "If served with an eviction notice or summons, respond within the strict statutory response deadline (often 5 to 7 business days) to prevent a default judgment. Seek local legal aid immediately.",
+        commonMistakes: "Moving out in panic upon receiving an informal text or verbal demand without confirming formal court filings or procedural validity.",
+        related: ["tenant_rights", "lease_agreement", "quiet_enjoyment", "small_claims_court"],
+        exampleQuestions: ["Can a landlord change locks without a court order?", "What are the rules for an eviction notice?", "How long does the eviction court process take?"]
+      },
+
+      "security_deposit": {
+        id: "security_deposit",
+        label: "Security Deposit Return",
+        keywords: ["security deposit", "deposit return", "landlord kept deposit", "deposit deduction", "normal wear and tear", "move out inspection", "rental deposit"],
+        definition: "A monetary sum paid by a tenant to a landlord at lease signing to cover potential property damage, unpaid rent, or cleaning costs beyond ordinary wear and tear.",
+        keyElements: [
+          "Statutory return deadline: Typically 14 to 30 days after lease termination and key return.",
+          "Itemized accounting: Landlords must provide detailed receipts and explanations for deductions.",
+          "Wear and Tear Rule: Deductions cannot be taken for ordinary depreciation, faded paint, or normal age-related wear.",
+          "Treble Damages: In many jurisdictions, bad-faith retention entitles the tenant to 2x or 3x the deposit amount in small claims court."
+        ],
+        advice: "Conduct a thorough move-out walkthrough with your landlord. Take high-resolution, timestamped photos and video of all rooms, fixtures, and appliances on the day you vacate.",
+        commonMistakes: "Failing to leave a formal written forwarding address with the landlord, which can toll statutory refund deadlines.",
+        related: ["tenant_rights", "lease_agreement", "small_claims_court"],
+        exampleQuestions: ["How long does a landlord have to return my deposit?", "Can a landlord deduct for normal wear and tear?", "How to sue for unreturned security deposit?"]
+      },
+
+      "habitability": {
+        id: "habitability",
+        label: "Warranty of Habitability",
+        keywords: ["habitability", "warranty of habitability", "mold", "no heat", "broken plumbing", "pest infestation", "apartment repairs", "repair and deduct"],
+        definition: "An implied legal obligation in residential leases requiring landlords to maintain the property in a condition fit for human habitation throughout the tenancy.",
+        keyElements: [
+          "Effective waterproofing and weather protection of roof and exterior walls.",
+          "Working plumbing, hot and cold running water, and sanitary drainage facilities.",
+          "Operational heating system and safe electrical wiring and lighting.",
+          "Clean and sanitary premises free from rodents, vermin, and toxic mold."
+        ],
+        advice: "Document all defects with photos. Send formal written notice demanding repairs within 30 days (or 72 hours for emergencies like lack of heat). Research local 'repair and deduct' or rent escrow rules.",
+        commonMistakes: "Immediately stopping rent payments without sending formal written notice or depositing funds in a recognized court escrow account.",
+        related: ["tenant_rights", "eviction", "lease_agreement"],
+        exampleQuestions: ["What is the implied warranty of habitability?", "Can I withhold rent if there is mold or no heat?", "How to invoke the repair-and-deduct remedy?"]
+      },
+
+      "lease_agreement": {
+        id: "lease_agreement",
+        label: "Residential Lease Agreement",
+        keywords: ["lease", "lease agreement", "rental agreement", "month to month", "sublease", "breaking lease", "landlord contract", "tenancy"],
+        definition: "A contractual agreement defining the terms under which one party agrees to rent residential real estate owned by another party for a specified duration.",
+        keyElements: [
+          "Identification of premises, rental rate, payment frequency, and due dates.",
+          "Term of tenancy (fixed term vs. periodic month-to-month).",
+          "Rules regarding utility allocation, pets, subletting, guest policies, and maintenance duties.",
+          "Termination terms and early termination penalty provisions."
+        ],
+        advice: "Carefully inspect clauses regarding subletting, automatic lease renewals, and maintenance responsibilities before signing. Request written amendments for any verbal concessions.",
+        commonMistakes: "Assuming you can walk away from a fixed-year lease early without liability for the remaining rent, unless the landlord has a statutory duty to mitigate damages.",
+        related: ["tenant_rights", "eviction", "security_deposit", "quiet_enjoyment"],
+        exampleQuestions: ["What happens if I break my lease early?", "What is the difference between a lease and month-to-month agreement?", "Can my landlord change rent during a lease?"]
+      },
+
+      "quiet_enjoyment": {
+        id: "quiet_enjoyment",
+        label: "Covenant of Quiet Enjoyment",
+        keywords: ["quiet enjoyment", "landlord harassment", "unreasonable entry", "privacy violation", "excessive noise", "constructive eviction"],
+        definition: "An implied covenant in every lease guaranteeing the tenant peaceable possession and use of the premises free from unreasonable interference by the landlord or superior titleholders.",
+        keyElements: [
+          "Protection against unwarranted, unannounced entries by the landlord.",
+          "Protection against continuous, unaddressed nuisances or disruptive harassment.",
+          "Breach of this covenant can constitute 'constructive eviction', entitling the tenant to vacate without liability."
+        ],
+        advice: "Log every unannounced entry with dates, times, and photographs. Issue a formal cease-and-desist letter asserting your statutory right to privacy and reasonable notice.",
+        commonMistakes: "Vacating the premises claiming constructive eviction without giving the landlord adequate written notice and reasonable time to cure the disturbance.",
+        related: ["tenant_rights", "habitability", "eviction"],
+        exampleQuestions: ["What does the covenant of quiet enjoyment mean?", "Can my landlord enter my room without permission?", "What is constructive eviction?"]
+      },
+
+      // --- INTELLECTUAL PROPERTY ---
+      "intellectual_property": {
+        id: "intellectual_property",
+        label: "Intellectual Property Overview",
+        keywords: ["intellectual property", "ip law", "protect my idea", "protect my work", "creative property", "intangible asset", "patent copyright trademark"],
+        definition: "A category of legal property rights that protect creations of the human mind, including literary and artistic works, inventions, designs, symbols, names, and images used in commerce.",
+        keyElements: [
+          "Copyright: Protects original creative expression fixed in a tangible medium.",
+          "Trademark: Protects brand names, logos, slogans, and distinctive commercial trade dress.",
+          "Patent: Protects novel, useful, and non-obvious technological inventions and processes.",
+          "Trade Secret: Protects confidential commercial information offering a competitive advantage."
+        ],
+        advice: "Audit your business assets to determine which form of IP protection applies. An idea cannot be protected by copyright or patent until it is materialized or meets statutory novelty thresholds.",
+        commonMistakes: "Confusing copyright (for creative text/art) with trademark (for brand identifiers) and patent (for technological inventions).",
+        related: ["copyright", "trademark", "patent", "trade_secret", "nda"],
+        exampleQuestions: ["What are the four types of intellectual property?", "How do I protect my startup's idea?", "Difference between copyright, patent, and trademark?"]
+      },
+
+      "copyright": {
+        id: "copyright",
+        label: "Copyright Law",
+        keywords: ["copyright", "copyright protection", "original work", "author rights", "creative works", "artistic work", "dmca", "register copyright"],
+        definition: "An exclusive legal right granted to the creator of an original work of authorship fixed in a tangible medium of expression to reproduce, distribute, display, perform, or create derivative works.",
+        keyElements: [
+          "Originality: Must possess at least a creative spark and originate from the author.",
+          "Tangible medium: Fixed on paper, digital disk, canvas, audio recording, or video.",
+          "Automatic protection: Exists the moment the work is created; registration is optional but required to sue in federal court.",
+          "Duration: Generally author's life plus 70 years (or 95 years from publication for corporate works)."
+        ],
+        advice: "Register your creative works with the national Copyright Office prior to publishing or within 3 months of publication to preserve eligibility for statutory damages and attorney fees.",
+        commonMistakes: "Believing that mailing a copy of your work to yourself (the 'poor man's copyright') provides valid legal registration or presumption of ownership.",
+        related: ["copyright_infringement", "fair_use", "trademark", "patent"],
+        exampleQuestions: ["How does copyright protection work?", "Do I need to register my copyright to be protected?", "How long does copyright last?"]
+      },
+
+      "copyright_infringement": {
+        id: "copyright_infringement",
+        label: "Copyright Infringement",
+        keywords: ["copyright infringement", "plagiarism", "stolen art", "dmca takedown", "unauthorized copy", "piracy", "substantial similarity", "copied my work"],
+        definition: "The unauthorized exercise of one or more of the exclusive statutory rights granted to a copyright owner without a valid license, authorization, or legal defense such as Fair Use.",
+        keyElements: [
+          "Proof of copyright ownership and valid registration.",
+          "Direct copying by the defendant (access to the original work plus substantial similarity).",
+          "Absence of valid express or implied license.",
+          "Remedies: Injunctions, actual economic damages, or statutory damages (up to $150,000 per willful infringement)."
+        ],
+        advice: "1. Capture dated evidence and URL screenshots of the infringing usage. 2. File a formal Digital Millennium Copyright Act (DMCA) takedown notice with the hosting provider. 3. Issue a Cease & Desist letter.",
+        commonMistakes: "Assuming that adding a disclaimer like 'no copyright infringement intended' or providing author attribution excuses unauthorized commercial use.",
+        related: ["copyright", "fair_use", "cease_and_desist", "intellectual_property"],
+        exampleQuestions: ["What constitutes copyright infringement?", "How do I send a DMCA takedown notice?", "Can someone use my photo if they credit me?"]
+      },
+
+      "trademark": {
+        id: "trademark",
+        label: "Trademark & Brand Protection",
+        keywords: ["trademark", "brand name", "logo protection", "trade dress", "lanham act", "registered mark", "likelihood of confusion", "brand infringement"],
+        definition: "A recognizable sign, design, word, phrase, or expression that identifies and distinguishes the commercial source of goods or services of one enterprise from those of others.",
+        keyElements: [
+          "Distinctiveness: Marks are categorized from strongest to weakest: Fanciful, Arbitrary, Suggestive, Descriptive, Generic.",
+          "Use in Commerce: Rights are established through genuine commercial usage.",
+          "Standard of Infringement: 'Likelihood of Confusion' among ordinary prospective consumers regarding origin or sponsorship."
+        ],
+        advice: "Conduct comprehensive trademark clearance searches (USPTO TESS database and common law usage) before investing heavily in branding. Apply for registration under the Lanham Act.",
+        commonMistakes: "Choosing a generic or purely descriptive product name (e.g., 'Cold Ice Cream'), which cannot obtain trademark protection on the principal register.",
+        related: ["intellectual_property", "copyright", "patent", "cease_and_desist"],
+        exampleQuestions: ["What is a trademark?", "How do I protect my brand name and logo?", "What is likelihood of confusion in trademarks?"]
+      },
+
+      "patent": {
+        id: "patent",
+        label: "Patent Law",
+        keywords: ["patent", "utility patent", "design patent", "invention", "novelty", "non obvious", "provisional patent", "patent infringement"],
+        definition: "A property right granted by a government authority to an inventor that excludes others from making, using, selling, or importing an invention for a limited period of time.",
+        keyElements: [
+          "Patentable Subject Matter: Process, machine, manufacture, or composition of matter.",
+          "Novelty: The invention must not have been publicly disclosed anywhere in prior art.",
+          "Non-Obviousness: Must not be readily obvious to a person having ordinary skill in the art (PHOSITA).",
+          "Duration: 20 years from filing date for utility patents; 15 years for design patents."
+        ],
+        advice: "File a Provisional Patent Application before publicly revealing or marketing your invention. Public disclosure prior to filing destroys patentability in most international patent systems.",
+        commonMistakes: "Demonstrating the invention at trade shows or publishing academic papers before securing an official priority filing date.",
+        related: ["intellectual_property", "trade_secret", "copyright"],
+        exampleQuestions: ["What is the difference between utility and design patents?", "How to patent an invention?", "What makes an invention non-obvious?"]
+      },
+
+      "fair_use": {
+        id: "fair_use",
+        label: "Fair Use Doctrine",
+        keywords: ["fair use", "transformative use", "parody", "criticism", "educational use", "four factors", "copyright exception"],
+        definition: "A legal doctrine permitting the limited use of copyrighted material without requiring permission from the rights holder for purposes such as criticism, commentary, news reporting, teaching, or research.",
+        keyElements: [
+          "Factor 1: Purpose and character of the use (transformative nature and commercial vs. non-profit).",
+          "Factor 2: Nature of the copyrighted work (factual works receive less protection than creative fiction).",
+          "Factor 3: Amount and substantiality of the portion taken relative to the copyrighted work as a whole.",
+          "Factor 4: Effect of the use upon the potential market or value of the original work."
+        ],
+        advice: "Transform the original work by adding commentary, critical context, or humorous parody rather than utilizing it as a mere substitute for the original asset.",
+        commonMistakes: "Believing that using 'under 10 seconds of a song' or '300 words' is an automatic statutory safe harbor—fair use is an affirmative defense decided on case-by-case balancing.",
+        related: ["copyright", "copyright_infringement"],
+        exampleQuestions: ["What are the four factors of fair use?", "Is using a movie clip for YouTube review fair use?", "Is there a 10-second rule in copyright?"]
+      },
+
+      "trade_secret": {
+        id: "trade_secret",
+        label: "Trade Secret Protection",
+        keywords: ["trade secret", "confidential business info", "proprietary formula", "secret recipe", "defend trade secrets act", "misappropriation"],
+        definition: "Any business information, process, formula, pattern, compilation, program, or device that derives independent economic value from not being generally known and is subject to reasonable efforts to maintain secrecy.",
+        keyElements: [
+          "Economic Value: Derives commercial value from being secret from competitors.",
+          "Reasonable Secrecy Measures: Password encryption, access controls, employee NDAs, restricted visitor logs.",
+          "Misappropriation: Acquisition through improper means (theft, bribery, breach of duty) rather than reverse engineering."
+        ],
+        advice: "Establish strict tiered role-based digital permissions and mandate NDAs and exit interviews with all employees possessing key commercial secrets.",
+        commonMistakes: "Failing to implement physical or digital security measures; if you do not treat the information as secret, courts will not grant it trade secret protection.",
+        related: ["nda", "intellectual_property", "non_compete"],
+        exampleQuestions: ["What qualifies as a trade secret?", "How to protect business trade secrets?", "Can a company sue for stolen client lists?"]
+      },
+
+      // --- EMPLOYMENT LAW ---
+      "at_will_employment": {
+        id: "at_will_employment",
+        label: "At-Will Employment & Wrongful Termination",
+        keywords: ["at will", "wrongful termination", "fired without reason", "fired illegally", "employment termination", "severance", "unlawful dismissal"],
+        definition: "A legal doctrine providing that an employer can terminate an employee at any time for any reason, or no reason at all, provided the reason is not discriminatory, retaliatory, or illegal.",
+        keyElements: [
+          "Default Standard: Recognized in almost all US states (with varying exceptions).",
+          "Public Policy Exception: Cannot fire an employee for refusing to break the law or exercising statutory rights.",
+          "Anti-Discrimination Laws: Cannot terminate based on protected classes (race, gender, religion, disability, age).",
+          "Implied Contract Exception: Handbook promises of disciplinary steps can limit arbitrary termination."
+        ],
+        advice: "Request your complete personnel file and written performance reviews. Document timelines and retain copies of positive evaluations if you suspect unlawful discriminatory pretext.",
+        commonMistakes: "Believing that 'unfair' or 'harsh' management constitutes an actionable illegal firing in the absence of protected class discrimination or whistleblower retaliation.",
+        related: ["severance_agreement", "workplace_discrimination", "independent_contractor"],
+        exampleQuestions: ["Can an employer fire me for no reason?", "What qualifies as wrongful termination?", "What are the exceptions to at-will employment?"]
+      },
+
+      "independent_contractor": {
+        id: "independent_contractor",
+        label: "Independent Contractor vs. Employee",
+        keywords: ["independent contractor", "employee", "1099 vs w2", "misclassification", "abc test", "gig worker", "contractor rights", "overtime exemption"],
+        definition: "The legal distinction determining worker classification based on behavioral control, financial arrangements, and the fundamental nature of the working relationship.",
+        keyElements: [
+          "Behavioral Control: Does the employer dictate how, when, and where the work is performed?",
+          "Financial Control: Does the worker purchase their own equipment, have unreimbursed expenses, and market to others?",
+          "ABC Test: 1. Free from control; 2. Work is outside core business; 3. Worker customarily engaged in an independent trade.",
+          "Tax & Benefits Impact: Employees receive wage protections, overtime, and unemployment coverage; 1099s do not."
+        ],
+        advice: "If your employer controls your daily hours, equipment, and workflow while designating you a 1099 contractor, consult state labor departments or file IRS Form SS-8 for determination.",
+        commonMistakes: "Signing an agreement that says 'I am an independent contractor' and believing it binds labor authorities—courts look at operational reality, not contract labels.",
+        related: ["at_will_employment", "wage_and_hour", "contract"],
+        exampleQuestions: ["What is the difference between a 1099 contractor and W2 employee?", "What is the ABC test for worker classification?", "Can I claim overtime if misclassified as contractor?"]
+      },
+
+      "non_compete": {
+        id: "non_compete",
+        label: "Non-Compete Agreements",
+        keywords: ["non compete", "restrictive covenant", "covenant not to compete", "cant work for competitor", "ftc non compete", "non solicitation"],
+        definition: "A clause or contract under which an employee agrees not to enter into competition with the employer in a similar profession or trade after employment terminates.",
+        keyElements: [
+          "Protectable Business Interest: Legitimate trade secrets or specialized goodwill, not mere suppression of competition.",
+          "Geographic & Temporal Reasonableness: Typically restricted to specific local territory and 6 to 12 months duration.",
+          "Scope of Activity: Must be narrowly tailored to duties actually performed by the employee.",
+          "State Law Variations: Completely unenforceable in states like California, Minnesota, and Oklahoma."
+        ],
+        advice: "Check your jurisdiction's latest statutory rules and FTC regulatory status. If negotiating an offer, demand that non-compete clauses be restricted to customer non-solicitation only.",
+        commonMistakes: "Assuming all non-compete clauses are universally valid or invalid without evaluating local state statutes and governing choice-of-law provisions.",
+        related: ["nda", "trade_secret", "at_will_employment"],
+        exampleQuestions: ["Are non-compete agreements enforceable?", "Can my former employer prevent me from working for a competitor?", "How long can a non-compete last?"]
+      },
+
+      "severance_agreement": {
+        id: "severance_agreement",
+        label: "Severance Agreement & Waiver of Claims",
+        keywords: ["severance", "severance pay", "release of claims", "layoff package", "separation agreement", "owbpa", "negotiate severance"],
+        definition: "A contract between an employer and a departing employee offering monetary compensation and benefits in exchange for a full release of all legal claims against the enterprise.",
+        keyElements: [
+          "Consideration: The employer must provide something of value beyond what the employee is already legally owed.",
+          "Release of Claims: Broad waiver of wrongful termination, discrimination, and wage claims.",
+          "Older Workers Benefit Protection Act (OWBPA): 21-day consideration period and 7-day revocation period for workers 40+."
+        ],
+        advice: "Do not sign immediately under employer pressure. You almost always have time to review. Evaluate whether potential claims (such as unpaid commissions or medical leave retaliation) have higher value.",
+        commonMistakes: "Signing the separation release on the spot without consulting an employment attorney, which forfeits all future rights to dispute unpaid compensation or wrongful termination.",
+        related: ["at_will_employment", "workplace_discrimination"],
+        exampleQuestions: ["Can I negotiate my severance package?", "How long do I have to review a severance agreement?", "What happens if I sign a release of claims?"]
+      },
+
+      "workplace_discrimination": {
+        id: "workplace_discrimination",
+        label: "Workplace Discrimination & Harassment",
+        keywords: ["discrimination", "workplace harassment", "hostile work environment", "eeoc", "title vii", "protected class", "retaliation", "sexual harassment"],
+        definition: "Unlawful adverse employment actions or abusive workplace conditions directed against an individual because of their membership in a legally protected class.",
+        keyElements: [
+          "Protected Classes: Race, color, religion, sex (including pregnancy and sexual orientation), national origin, age (40+), disability, genetic info.",
+          "Adverse Employment Action: Firing, demotion, pay cut, undesirable reassignment, or constructive discharge.",
+          "Hostile Work Environment: Severe or pervasive conduct altering conditions of employment.",
+          "Administrative Exhaustion: Must file a timely charge with the EEOC (generally within 180 or 300 days) before filing a lawsuit."
+        ],
+        advice: "Report the discriminatory conduct in writing through official HR channels outlined in the employee handbook. Keep private, contemporaneous records of incidents, witnesses, and communications.",
+        commonMistakes: "Missing the strict EEOC filing deadline (180/300 days), which permanently bars federal discrimination claims.",
+        related: ["at_will_employment", "severance_agreement", "statute_of_limitations"],
+        exampleQuestions: ["What constitutes a hostile work environment?", "How to file an EEOC complaint for workplace discrimination?", "What is the deadline for filing an employment discrimination claim?"]
+      },
+
+      "wage_and_hour": {
+        id: "wage_and_hour",
+        label: "Wage & Hour Laws (FLSA & Overtime)",
+        keywords: ["overtime", "unpaid wages", "flsa", "minimum wage", "exempt vs non exempt", "wage theft", "break violations", "payroll deduction"],
+        definition: "Federal and state statutes governing fair compensation, including the federal minimum wage, overtime pay (time-and-a-half over 40 hours), meal and rest breaks, and recordkeeping.",
+        keyElements: [
+          "Exempt vs. Non-Exempt: Exemption requires meeting both salary threshold and specific executive, administrative, or professional duties tests.",
+          "Overtime Pay: 1.5x regular pay rate for hours worked beyond 40 in a single standard workweek.",
+          "Off-the-Clock Work: Employers cannot require or permit non-exempt employees to perform uncompensated pre-shift or post-shift tasks."
+        ],
+        advice: "Maintain independent personal logs of actual hours worked, shift start/end times, and meal breaks. Compare your paystubs against state mandatory wage statement disclosure requirements.",
+        commonMistakes: "Assuming that being paid a 'salary' automatically makes an employee exempt from overtime—duties tests must also be satisfied.",
+        related: ["independent_contractor", "at_will_employment", "small_claims_court"],
+        exampleQuestions: ["Who is eligible for overtime pay?", "Can an employer make me work off the clock?", "What makes an employee exempt vs non-exempt?"]
+      },
+
+      // --- DISPUTE RESOLUTION & LITIGATION ---
+      "small_claims_court": {
+        id: "small_claims_court",
+        label: "Small Claims Court Procedure",
+        keywords: ["small claims", "small claims court", "sue someone", "dollar limit", "self representation", "file a lawsuit", "collect money owed", "court hearing"],
+        definition: "A specialized court division designed to resolve civil disputes involving small amounts of money swiftly, inexpensively, and without formal, complex litigation procedures.",
+        keyElements: [
+          "Jurisdictional Monetary Cap: Typically between $2,500 and $15,000 depending on state/county.",
+          "Pro Se Representation: Designed for self-representation; attorneys are often prohibited or discouraged.",
+          "Informal Evidentiary Rules: Focuses on tangible documents, invoices, text exchanges, and concise witness testimony."
+        ],
+        advice: "Organize your evidence in a clean chronological binder: contracts, receipts, demand letters, and photo evidence. Practice a 3-minute opening narrative focusing on quantifiable breach and damages.",
+        commonMistakes: "Failing to send a formal written Demand Letter prior to filing, which many small claims courts require as a prerequisite.",
+        related: ["breach_of_contract", "security_deposit", "statute_of_limitations"],
+        exampleQuestions: ["How does small claims court work?", "What is the monetary limit for small claims?", "Do I need a lawyer for small claims court?"]
+      },
+
+      "mediation_vs_arbitration": {
+        id: "mediation_vs_arbitration",
+        label: "Mediation vs. Arbitration (ADR)",
+        keywords: ["mediation", "arbitration", "alternative dispute resolution", "adr", "mediator", "arbitrator", "binding arbitration", "settle dispute"],
+        definition: "Two primary forms of Alternative Dispute Resolution (ADR) used to resolve civil conflicts outside of public courtrooms through neutral third parties.",
+        keyElements: [
+          "Mediation: Non-binding negotiation facilitated by a neutral mediator; parties retain ultimate control over settlement terms.",
+          "Arbitration: Binding or non-binding adjudicative hearing where a private arbitrator evaluates evidence and issues a formal enforceable award.",
+          "Court Enforceability: Arbitration awards are readily confirmed by courts under the Federal Arbitration Act with minimal rights of appeal."
+        ],
+        advice: "Mediation is optimal when preserving business or personal relationships is desired. Arbitration is faster and more confidential than trial, but lacks robust appeal avenues.",
+        commonMistakes: "Signing mandatory arbitration clauses in consumer or vendor contracts without realizing you forfeit your constitutional right to a jury trial.",
+        related: ["contract", "small_claims_court"],
+        exampleQuestions: ["What is the difference between mediation and arbitration?", "Is arbitration legally binding?", "Can you appeal an arbitrator's decision?"]
+      },
+
+      "statute_of_limitations": {
+        id: "statute_of_limitations",
+        label: "Statute of Limitations",
+        keywords: ["statute of limitations", "time limit to sue", "deadline to file lawsuit", "expired claim", "tolling", "laches", "how long do i have to sue"],
+        definition: "A statutory enactment that sets the maximum time after an event within which legal proceedings may be initiated before the claim is permanently extinguished.",
+        keyElements: [
+          "Accrual of Cause of Action: Clock begins when the harm occurs or when reasonably discovered (Discovery Rule).",
+          "Subject Matter Variance: Typically 2 years for personal injury, 4 years for written contracts, 2 to 3 years for fraud or wages.",
+          "Tolling Exceptions: Clock may pause for minority (under 18), mental incapacity, or active fraudulent concealment by the defendant."
+        ],
+        advice: "Never delay seeking legal recourse. Calculate your jurisdiction's exact filing deadline from the date of default or breach. Once the statutory period expires, courts will dismiss your lawsuit with prejudice.",
+        commonMistakes: "Waiting for prolonged informal settlement talks to conclude, allowing the statutory filing deadline to lapse without securing a formal tolling agreement.",
+        related: ["breach_of_contract", "small_claims_court", "workplace_discrimination"],
+        exampleQuestions: ["What is the statute of limitations for breach of contract?", "How long do I have to file a civil lawsuit?", "What is tolling the statute of limitations?"]
+      },
+
+      "cease_and_desist": {
+        id: "cease_and_desist",
+        label: "Cease and Desist Letter",
+        keywords: ["cease and desist", "demand letter", "warning letter", "stop harassment", "stop infringement", "legal notice", "formal demand"],
+        definition: "A formal written communication sent to an individual or enterprise demanding that they immediately discontinue an allegedly illegal or infringing activity under threat of legal action.",
+        keyElements: [
+          "Identification of the sender's established legal rights (patent, trademark, copyright, privacy).",
+          "Specific factual details of the recipient's allegedly infringing or harmful actions.",
+          "Clear demand for immediate cessation and surrender/destruction of infringing assets.",
+          "Explicit, reasonable deadline for compliance before litigation is filed."
+        ],
+        advice: "Send via certified mail with return receipt requested. Maintain a firm, factual, and professional tone without using defamatory threats or extortionate language.",
+        commonMistakes: "Sending baseless or aggressive cease-and-desist letters, which can prompt the recipient to file a proactive Declaratory Judgment action in their preferred home court.",
+        related: ["copyright_infringement", "trademark", "breach_of_contract"],
+        exampleQuestions: ["How to write a cease and desist letter?", "Is a cease and desist letter legally binding?", "What happens if someone ignores a cease and desist?"]
+      }
+    };
+
+    /**
+     * =========================================================================
+     * 2. REASONING ENGINE (Rule-Based & Semantic Matching)
+     * =========================================================================
+     */
+
+    // Common stop words to strip during tokenization
+    const STOP_WORDS = new Set([
+      "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", 
+      "arent", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", 
+      "but", "by", "can", "cannot", "could", "did", "do", "does", "doing", "down", "during", "each", 
+      "few", "for", "from", "further", "had", "has", "have", "having", "he", "her", "here", "hers", 
+      "herself", "him", "himself", "his", "how", "i", "if", "in", "into", "is", "isnt", "it", "its", 
+      "itself", "me", "more", "most", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", 
+      "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "she", 
+      "should", "so", "some", "such", "than", "that", "the", "their", "theirs", "them", "themselves", 
+      "then", "there", "these", "they", "this", "those", "through", "to", "too", "under", "until", 
+      "up", "very", "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom", 
+      "why", "with", "would", "you", "your", "yours", "yourself", "yourselves", "tell", "explain",
+      "give", "legal", "law", "help", "please", "can", "know"
+    ]);
+
+    /**
+     * Normalizes text by lowercasing, stripping special characters, and trimming
+     */
+    function normalizeInput(input) {
+      if (!input) return "";
+      return input
+        .toLowerCase()
+        .replace(/[^\w\s\-\/\?]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    /**
+     * Extracts meaningful keyword tokens from normalized user input
+     */
+    function extractTokens(normalizedText) {
+      const rawTokens = normalizedText.split(/\s+/);
+      return rawTokens.filter(token => token.length > 2 && !STOP_WORDS.has(token));
+    }
+
+    /**
+     * Checks if input contains comparison intent ("vs", "versus", "difference between", "compare")
+     */
+    function detectComparisonIntent(normalizedText) {
+      const patterns = [
+        /\b(?:vs|versus|difference\s+between|compare|compared\s+to)\b/i,
+        /\b(\w+)\s+or\s+(\w+)\b/i
+      ];
+      return patterns.some(pattern => pattern.test(normalizedText));
+    }
+
+    /**
+     * Core Query Knowledge Graph Matching Engine
+     */
+    function queryKnowledgeGraph(userInput, currentFilter = "all") {
+      const normalized = normalizeInput(userInput);
+      const tokens = extractTokens(normalized);
+      const isComparison = detectComparisonIntent(normalized);
+
+      // Score all nodes
+      const scoredNodes = Object.values(legalKnowledgeGraph).map(node => {
+        let score = 0;
+        const nodeLabelNorm = node.label.toLowerCase();
+        const nodeIdNorm = node.id.replace(/_/g, " ");
+
+        // Category filter constraint
+        if (currentFilter !== "all" && node.category !== currentFilter) {
+          score -= 10;
+        }
+
+        // 1. Direct label or ID exact phrase match
+        if (normalized.includes(nodeLabelNorm) || normalized.includes(nodeIdNorm)) {
+          score += 60;
+        }
+
+        // 2. Exact keyword phrase match
+        for (const kw of node.keywords) {
+          const kwNorm = kw.toLowerCase();
+          if (normalized === kwNorm) {
+            score += 100;
+          } else if (normalized.includes(kwNorm)) {
+            score += 45;
+          }
+        }
+
+        // 3. Token-based matching against keywords & labels
+        for (const token of tokens) {
+          if (nodeIdNorm.includes(token)) score += 20;
+          if (nodeLabelNorm.includes(token)) score += 25;
+          
+          for (const kw of node.keywords) {
+            if (kw.toLowerCase().split(/\s+/).includes(token)) {
+              score += 12;
+            }
+          }
+
+          // Search definition text (lower weight)
+          if (node.definition.toLowerCase().includes(token)) {
+            score += 4;
+          }
+        }
+
+        return { node, score };
+      });
+
+      // Sort descending by score
+      scoredNodes.sort((a, b) => b.score - a.score);
+
+      const topResult = scoredNodes[0];
+      const secondResult = scoredNodes[1];
+
+      // Comparison handling: if query indicates comparison and top two candidates have solid relevance
+      if (isComparison && topResult && secondResult && topResult.score >= 20 && secondResult.score >= 15) {
+        return {
+          type: "comparison",
+          primaryNode: topResult.node,
+          secondaryNode: secondResult.node,
+          confidence: Math.min(98, Math.round(((topResult.score + secondResult.score) / 2) * 1.5)),
+          relatedNodes: getRelatedNodes([topResult.node, secondResult.node])
+        };
+      }
+
+      // Single Topic Match: Minimum confidence threshold
+      if (topResult && topResult.score >= 15) {
+        const confidence = Math.min(99, Math.max(72, Math.round(topResult.score * 1.8)));
+        return {
+          type: "single",
+          node: topResult.node,
+          confidence: confidence,
+          relatedNodes: topResult.node.related.map(id => legalKnowledgeGraph[id]).filter(Boolean)
+        };
+      }
+
+      // No confident match -> fallback suggestions
+      return {
+        type: "fallback",
+        suggestions: Object.values(legalKnowledgeGraph).slice(0, 5)
+      };
+    }
+
+    /**
+     * Resolves unique related nodes for multi-node responses
+     */
+    function getRelatedNodes(nodes) {
+      const ids = new Set();
+      const result = [];
+      nodes.forEach(n => {
+        n.related.forEach(relId => {
+          if (!ids.has(relId) && !nodes.some(existing => existing.id === relId)) {
+            ids.add(relId);
+            if (legalKnowledgeGraph[relId]) {
+              result.push(legalKnowledgeGraph[relId]);
+            }
+          }
+        });
+      });
+      return result.slice(0, 5);
+    }
+
+    /**
+     * =========================================================================
+     * 3. UI RENDERING & CHAT CONTROLLER
+     * =========================================================================
+     */
+
+    let currentCategoryFilter = "all";
+    let chatHistory = [];
+
+    // Filter categories via top navigation
+    function filterCategory(cat, btnEl) {
+      currentCategoryFilter = cat;
+      document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+      if (btnEl) btnEl.classList.add("active");
+      
+      // Update quick chips bar to reflect category
+      updateSuggestedChips();
+    }
+
+    function updateSuggestedChips() {
+      const container = document.getElementById("suggested-chips");
+      if (!container) return;
+
+      const nodes = Object.values(legalKnowledgeGraph).filter(n => {
+        return currentCategoryFilter === "all" || n.category === currentCategoryFilter;
+      });
+
+      container.innerHTML = nodes.slice(0, 9).map(n => `
+        <button class="topic-chip" onclick="handleTopicClick('${n.exampleQuestions[0] || n.label}')">
+          ${n.label}
+        </button>
+      `).join("");
+    }
+
+    function handleTopicClick(query) {
+      const input = document.getElementById("user-input");
+      if (input) {
+        input.value = query;
+        processUserQuery(query);
+      }
+    }
+
+    function handleCategorySelection(cat) {
+      filterCategory(cat);
+      const navBtn = document.querySelector(`.nav-btn[data-cat="${cat}"]`);
+      if (navBtn) {
+        document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+        navBtn.classList.add("active");
+      }
+      const sampleQuestion = Object.values(legalKnowledgeGraph).find(n => n.category === cat)?.exampleQuestions[0];
+      if (sampleQuestion) {
+        processUserQuery(sampleQuestion);
+      }
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById("user-input");
+      const query = input.value.trim();
+      if (!query) return;
+
+      closeAutocomplete();
+      processUserQuery(query);
+      input.value = "";
+      document.getElementById("btn-clear-input").style.display = "none";
+    }
+
+    function clearInputField() {
+      const input = document.getElementById("user-input");
+      input.value = "";
+      input.focus();
+      document.getElementById("btn-clear-input").style.display = "none";
+      closeAutocomplete();
+    }
+
+    function handleInputChange(val) {
+      const clearBtn = document.getElementById("btn-clear-input");
+      clearBtn.style.display = val.length > 0 ? "block" : "none";
+
+      // Autocomplete preview
+      if (val.trim().length >= 2) {
+        renderAutocomplete(val.trim());
+      } else {
+        closeAutocomplete();
+      }
+    }
+
+    function handleInputKeyDown(e) {
+      if (e.key === "Escape") {
+        closeAutocomplete();
+      }
+    }
+
+    function renderAutocomplete(text) {
+      const box = document.getElementById("autocomplete-box");
+      const normalized = normalizeInput(text);
+      const matches = Object.values(legalKnowledgeGraph).filter(n => {
+        return n.label.toLowerCase().includes(normalized) || 
+               n.keywords.some(k => k.toLowerCase().includes(normalized));
+      }).slice(0, 4);
+
+      if (matches.length === 0) {
+        closeAutocomplete();
+        return;
+      }
+
+      box.innerHTML = matches.map(m => `
+        <div class="autocomplete-item" onclick="selectAutocomplete('${m.exampleQuestions[0]}')">
+          <div>
+            <strong>${m.label}</strong>
+            <span style="font-size: 0.72rem; color: var(--text-muted); margin-left: 0.5rem;">(${m.category})</span>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--accent-blue);">Ask topic →</span>
+        </div>
+      `).join("");
+      box.style.display = "block";
+    }
+
+    function selectAutocomplete(query) {
+      const input = document.getElementById("user-input");
+      input.value = query;
+      closeAutocomplete();
+      processUserQuery(query);
+    }
+
+    function closeAutocomplete() {
+      const box = document.getElementById("autocomplete-box");
+      box.style.display = "none";
+    }
+
+    function getCurrentTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    /**
+     * Executes query matching and appends conversational turns to the UI
+     */
+    function processUserQuery(userText) {
+      const chatLog = document.getElementById("chat-log");
+
+      // 1. Render User Message
+      const userRow = document.createElement("div");
+      userRow.className = "msg-row user";
+      userRow.innerHTML = `
+        <div class="msg-content">
+          <div class="msg-bubble">${escapeHtml(userText)}</div>
+          <div class="msg-meta">
+            <span>You</span>
+            <span aria-hidden="true">·</span>
+            <span>${getCurrentTime()}</span>
+          </div>
+        </div>
+        <div class="msg-avatar user-avatar" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+      `;
+      chatLog.appendChild(userRow);
+
+      // 2. Query Knowledge Graph
+      const result = queryKnowledgeGraph(userText, currentCategoryFilter);
+
+      // 3. Render Bot Response
+      const botRow = document.createElement("div");
+      botRow.className = "msg-row bot";
+
+      let responseHtml = "";
+
+      if (result.type === "single") {
+        const node = result.node;
+        responseHtml = `
+          <div class="legal-node-header">
+            <div class="node-title-group">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-gold);">
+                  <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+                  <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+                  <path d="M7 21h10"/><path d="M12 3v18"/>
+                </svg>
+                <span>${node.label}</span>
+              </h3>
+              <span class="node-category-pill">${node.category}</span>
+            </div>
+            <span class="confidence-badge">Confidence: ${result.confidence}%</span>
+          </div>
+
+          <!-- Legal Definition -->
+          <div class="legal-section-block">
+            <div class="legal-section-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              <span>Legal Definition & Context</span>
+            </div>
+            <p class="legal-definition-text">${node.definition}</p>
+          </div>
+
+          <!-- Key Legal Elements -->
+          <div class="legal-section-block">
+            <div class="legal-section-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              <span>Statutory Criteria / Key Elements</span>
+            </div>
+            <ul class="key-elements-list">
+              ${node.keyElements.map(elem => `<li>${elem}</li>`).join("")}
+            </ul>
+          </div>
+
+          <!-- Actionable Advice -->
+          <div class="legal-section-block">
+            <div class="legal-section-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              <span>Actionable Legal Guidance</span>
+            </div>
+            <div class="legal-advice-box">
+              ${node.advice}
+            </div>
+          </div>
+
+          <!-- Common Pitfalls -->
+          <div class="legal-section-block">
+            <div class="legal-section-title" style="color: var(--accent-rose);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>Common Pitfalls to Avoid</span>
+            </div>
+            <div class="common-mistake-box">
+              ${node.commonMistakes}
+            </div>
+          </div>
+
+          <!-- Interactive Follow-up Nodes -->
+          <div class="related-nodes-section">
+            <div class="legal-section-title" style="color: var(--text-secondary);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              <span>Related Legal Topics (Click to Explore)</span>
+            </div>
+            <div class="related-chips-grid">
+              ${result.relatedNodes.map(r => `
+                <button class="related-btn" onclick="handleTopicClick('${r.exampleQuestions[0]}')">
+                  <span>${r.label}</span>
+                  <span style="color: var(--accent-blue); font-size: 0.7rem;">→</span>
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      } else if (result.type === "comparison") {
+        const n1 = result.primaryNode;
+        const n2 = result.secondaryNode;
+        responseHtml = `
+          <div class="legal-node-header">
+            <div class="node-title-group">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-gold);">
+                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span>Comparative Legal Analysis</span>
+              </h3>
+              <span class="node-category-pill">${n1.label} vs. ${n2.label}</span>
+            </div>
+            <span class="confidence-badge">Match: ${result.confidence}%</span>
+          </div>
+
+          <div class="comparison-container">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Legal Attribute</th>
+                  <th style="width: 37.5%;">${n1.label}</th>
+                  <th style="width: 37.5%;">${n2.label}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight: 600; color: var(--text-primary);">Core Definition</td>
+                  <td>${n1.definition}</td>
+                  <td>${n2.definition}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 600; color: var(--text-primary);">Primary Focus</td>
+                  <td>${n1.keyElements[0] || 'N/A'}</td>
+                  <td>${n2.keyElements[0] || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 600; color: var(--text-primary);">Strategic Advice</td>
+                  <td>${n1.advice}</td>
+                  <td>${n2.advice}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="related-nodes-section">
+            <div class="legal-section-title" style="color: var(--text-secondary);">
+              <span>Explore Follow-up Concepts</span>
+            </div>
+            <div class="related-chips-grid">
+              <button class="related-btn" onclick="handleTopicClick('${n1.exampleQuestions[0]}')">Deep Dive: ${n1.label} →</button>
+              <button class="related-btn" onclick="handleTopicClick('${n2.exampleQuestions[0]}')">Deep Dive: ${n2.label} →</button>
+              ${result.relatedNodes.map(r => `
+                <button class="related-btn" onclick="handleTopicClick('${r.exampleQuestions[0]}')">${r.label} →</button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      } else {
+        // Fallback response
+        responseHtml = `
+          <div class="legal-node-header">
+            <div class="node-title-group">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-gold);">
+                  <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>Semantic Disambiguation</span>
+              </h3>
+            </div>
+          </div>
+
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            We could not find an exact match for <em>"${escapeHtml(userText)}"</em> in the localized legal graph. 
+            Try rephrasing with core legal terms, or select one of our popular legal nodes below:
+          </p>
+
+          <div class="related-nodes-section" style="border: none; padding-top: 0.25rem;">
+            <div class="legal-section-title" style="color: var(--accent-gold);">
+              <span>Popular Legal Topics in Graph</span>
+            </div>
+            <div class="related-chips-grid">
+              ${result.suggestions.map(s => `
+                <button class="related-btn" onclick="handleTopicClick('${s.exampleQuestions[0]}')">
+                  ${s.label} (${s.category}) →
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      botRow.innerHTML = `
+        <div class="msg-avatar bot" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+            <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+            <path d="M7 21h10"/><path d="M12 3v18"/>
+          </svg>
+        </div>
+        <div class="msg-content">
+          <div class="msg-bubble">${responseHtml}</div>
+          <div class="msg-meta">
+            <span>Lexicon Engine</span>
+            <span aria-hidden="true">·</span>
+            <span>${getCurrentTime()}</span>
+          </div>
+        </div>
+      `;
+
+      chatLog.appendChild(botRow);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function resetChat() {
+      const chatLog = document.getElementById("chat-log");
+      const welcome = document.getElementById("welcome-message");
+      chatLog.innerHTML = "";
+      if (welcome) {
+        chatLog.appendChild(welcome);
+      }
+      const input = document.getElementById("user-input");
+      if (input) {
+        input.value = "";
+        input.focus();
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 4. KNOWLEDGE GRAPH DRAWER INSPECTOR
+     * =========================================================================
+     */
+
+    function toggleGraphDrawer(open) {
+      const drawer = document.getElementById("graph-drawer");
+      if (open) {
+        drawer.classList.add("open");
+        renderDrawerNodes("");
+      } else {
+        drawer.classList.remove("open");
+      }
+    }
+
+    function handleDrawerOverlayClick(e) {
+      if (e.target.id === "graph-drawer") {
+        toggleGraphDrawer(false);
+      }
+    }
+
+    function handleDrawerSearch(query) {
+      renderDrawerNodes(query);
+    }
+
+    function renderDrawerNodes(query) {
+      const container = document.getElementById("drawer-nodes-list");
+      const norm = query.toLowerCase().trim();
+
+      // Group nodes by category
+      const categories = ["Contracts", "Tenant & Landlord", "Intellectual Property", "Employment Law", "Dispute Resolution"];
+      
+      let html = "";
+      categories.forEach(cat => {
+        const catNodes = Object.values(legalKnowledgeGraph).filter(n => {
+          const matchesCat = n.category === cat;
+          const matchesQuery = !norm || 
+            n.label.toLowerCase().includes(norm) || 
+            n.keywords.some(k => k.toLowerCase().includes(norm));
+          return matchesCat && matchesQuery;
+        });
+
+        if (catNodes.length > 0) {
+          html += `
+            <div class="graph-category-group">
+              <div class="graph-category-title">
+                <span>${cat}</span>
+                <span style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);">${catNodes.length} nodes</span>
+              </div>
+              <div class="graph-nodes-grid">
+                ${catNodes.map(n => `
+                  <div class="graph-node-card" onclick="inspectNodeInDrawer('${n.id}')">
+                    <div class="graph-node-name">${n.label}</div>
+                    <div class="graph-node-keywords">${n.keywords.slice(0, 3).join(", ")}</div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      if (!html) {
+        html = `<p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 2rem 0;">No matching legal nodes found.</p>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function inspectNodeInDrawer(nodeId) {
+      const node = legalKnowledgeGraph[nodeId];
+      if (!node) return;
+
+      const inspectorContainer = document.getElementById("inspector-container");
+      inspectorContainer.innerHTML = `
+        <div class="node-inspector">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="inspector-title">${node.label}</div>
+              <span class="node-category-pill">${node.category}</span>
+            </div>
+            <button class="close-btn" onclick="closeInspector()" title="Dismiss inspector">✕</button>
+          </div>
+          <p class="inspector-def">${node.definition}</p>
+          <div class="inspector-actions">
+            <button class="action-btn primary" onclick="queryNodeFromDrawer('${node.exampleQuestions[0]}')">
+              Ask in Chat →
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function closeInspector() {
+      document.getElementById("inspector-container").innerHTML = "";
+    }
+
+    function queryNodeFromDrawer(question) {
+      toggleGraphDrawer(false);
+      const input = document.getElementById("user-input");
+      input.value = question;
+      processUserQuery(question);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    // Keyboard navigation (Esc closes drawer or autocomplete)
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        toggleGraphDrawer(false);
+        closeAutocomplete();
+      }
+    });
+
+    // Initialize chips
+    updateSuggestedChips();
+  </script>
+</body>
+</html>
